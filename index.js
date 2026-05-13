@@ -8,8 +8,6 @@ const {
   Events
 } = require('discord.js');
 
-const config = require('./config.json');
-
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
@@ -50,4 +48,4 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-client.login(config.token);
+client.login(process.env.TOKEN);
