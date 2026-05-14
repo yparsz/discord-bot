@@ -1,42 +1,62 @@
 const { REST, Routes } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
-
 const config = require('./config.json');
 
-const commands = [];
-const commandsPath = path.join(__dirname, 'commands');
-
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-
-  commands.push(command.data.toJSON());
-}
+const commands = [
+  {
+    name: 'crewcolour',
+    description: 'Create a crew colour',
+    options: [
+      {
+        name: 'name',
+        description: 'Name of the crew colour',
+        type: 3,
+        required: true
+      },
+      {
+        name: 'hex',
+        description: 'Main hex colour (e.g. #FF0000)',
+        type: 3,
+        required: true
+      },
+      {
+        name: 'pearlescent',
+        description: 'Pearlescent colour',
+        type: 3,
+        required: false,
+        choices: [
+          { name: 'None', value: 'none' },
+          { name: 'White', value: 'white' },
+          { name: 'Ice White', value: 'ice_white' },
+          { name: 'Blue', value: 'blue' },
+          { name: 'Red', value: 'red' },
+          { name: 'Green', value: 'green' },
+          { name: 'Gold', value: 'gold' },
+          { name: 'Pink', value: 'pink' }
+        ]
+      },
+      {
+        name: 'image',
+        description: 'Image URL',
+        type: 3,
+        required: false
+      }
+    ]
+  }
+];
 
 const rest = new REST({ version: '10' }).setToken(config.token);
 
 (async () => {
-
   try {
-
-    console.log('Deploying slash commands...');
+    console.log('Deploying commands...');
 
     await rest.put(
-      Routes.applicationGuildCommands(
-        config.clientId,
-        config.guildId
-      ),
+      Routes.applicationGuildCommands(config.clientId, config.guildId),
       { body: commands }
     );
 
     console.log('Commands deployed.');
-
   } catch (error) {
     console.error(error);
   }
-
 })();

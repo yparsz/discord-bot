@@ -60,23 +60,26 @@ module.exports = {
           { name: 'Pearlescent', value: pearlescent, inline: true }
         );
 
-      // If user uploaded image
       if (image) {
         embed.setImage(image.url);
       }
 
-      const message = await interaction.reply({
-        embeds: [embed],
-        fetchReply: true
-      });
+      // Reply safely (NO timeout issues)
+      await interaction.reply({ embeds: [embed] });
 
-      await message.react('👍');
-      await message.react('👎');
+      // Optional reactions (safe version, won't crash bot)
+      try {
+        const msg = await interaction.fetchReply();
+        await msg.react('👍').catch(() => {});
+        await msg.react('👎').catch(() => {});
+      } catch (err) {
+        console.log('Reaction failed (ignored)');
+      }
 
     } catch (err) {
       console.error('Crewcolour error:', err);
 
-      if (!interaction.replied) {
+      if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
           content: 'Something went wrong with the command.',
           ephemeral: true
