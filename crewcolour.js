@@ -4,7 +4,6 @@ function parseGtaHex(input) {
   if (!input) return { color: '#FFFFFF', end: 'FF' };
 
   let clean = input.replace('#', '').toUpperCase();
-
   let end = 'FF';
 
   if (clean.length === 8) {
@@ -26,27 +25,35 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName('crewcolour')
     .setDescription('Create a GTA crew colour')
+
     .addStringOption(option =>
       option.setName('hex')
         .setDescription('GTA hex colour (#RRGGBBAA)')
         .setRequired(true)
     )
+
     .addStringOption(option =>
       option.setName('pearlescent')
         .setDescription('Pearlescent colour name')
         .setRequired(false)
     )
+
     .addAttachmentOption(option =>
       option.setName('image')
         .setDescription('Upload an image')
-        .setRequired(false)
+        .setRequired(true)
     ),
 
   async execute(interaction) {
     try {
+      await interaction.deferReply();
+
       const hexInput = interaction.options.getString('hex');
-      const pearlescent = interaction.options.getString('pearlescent') || 'None';
-      const image = interaction.options.getAttachment('image');
+      const pearlescent =
+        interaction.options.getString('pearlescent') || 'None';
+
+      const image =
+        interaction.options.getAttachment('image');
 
       const parsed = parseGtaHex(hexInput);
 
@@ -54,33 +61,45 @@ module.exports = {
         .setTitle('Crew Colour')
         .setColor(parsed.color)
         .addFields(
-          { name: 'GTA Hex', value: hexInput, inline: false },
-          { name: 'Hex Colour', value: parsed.color, inline: true },
-          { name: 'Hex End', value: parsed.end, inline: true },
-          { name: 'Pearlescent', value: pearlescent, inline: true }
-        );
+          {
+            name: 'GTA Hex',
+            value: hexInput,
+            inline: false
+          },
+          {
+            name: 'Hex Colour',
+            value: parsed.color,
+            inline: true
+          },
+          {
+            name: 'Hex End',
+            value: parsed.end,
+            inline: true
+          },
+          {
+            name: 'Pearlescent',
+            value: pearlescent,
+            inline: true
+          }
+        )
+        .setImage(image.url);
 
-      // If user uploaded image
-      if (image) {
-        embed.setImage(image.url);
-      }
-
-      const message = await interaction.reply({
-        embeds: [embed],
-        fetchReply: true
+      await interaction.editReply({
+        embeds: [embed]
       });
-
-      await message.react('👍');
-      await message.react('👎');
 
     } catch (err) {
       console.error('Crewcolour error:', err);
 
-      if (!interaction.replied) {
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply({
+          content: 'Something went wrong with the command.'
+        }).catch(() => {});
+      } else {
         await interaction.reply({
           content: 'Something went wrong with the command.',
           ephemeral: true
-        });
+        }).catch(() => {});
       }
     }
   }
