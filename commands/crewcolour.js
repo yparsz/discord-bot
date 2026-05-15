@@ -4,7 +4,6 @@ function parseGtaHex(input) {
   if (!input) return { color: '#FFFFFF', end: 'FF' };
 
   let clean = input.replace('#', '').toUpperCase();
-
   let end = 'FF';
 
   if (clean.length === 8) {
@@ -64,17 +63,10 @@ module.exports = {
         embed.setImage(image.url);
       }
 
-      // Reply safely (NO timeout issues)
-      await interaction.reply({ embeds: [embed] });
+      // IMPORTANT: prevents "application did not respond"
+      await interaction.deferReply();
 
-      // Optional reactions (safe version, won't crash bot)
-      try {
-        const msg = await interaction.fetchReply();
-        await msg.react('👍').catch(() => {});
-        await msg.react('👎').catch(() => {});
-      } catch (err) {
-        console.log('Reaction failed (ignored)');
-      }
+      await interaction.editReply({ embeds: [embed] });
 
     } catch (err) {
       console.error('Crewcolour error:', err);
