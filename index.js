@@ -5,7 +5,7 @@ const config = require('./config.json');
 const {
   Client,
   Collection,
- GatewayIntentBits,
+  GatewayIntentBits,
   Events
 } = require('discord.js');
 
@@ -29,6 +29,9 @@ for (const file of commandFiles) {
     console.log(`[WARNING] ${file} is missing data or execute`);
   }
 }
+
+// 🔥 DEBUG: show how many commands loaded
+console.log("COMMAND FILES LOADED:", client.commands.size);
 
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user.tag}`);
