@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const config = require('./config.json');
 
 const {
   Client,
@@ -15,41 +14,46 @@ const client = new Client({
 
 client.commands = new Collection();
 
+// Load commands
 const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath)
-  .filter(file => file.endsWith('.js'));
+
+let commandFiles = [];
+try {
+  commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+} catch (err) {
+  console.error('Commands folder not found:', err);
+}
 
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
 
-  if ('data' in command && 'execute' in command) {
+  if (command?.data?.name && command?.execute) {
     client.commands.set(command.data.name, command);
   } else {
-    console.log(`[WARNING] ${file} is missing data or execute`);
+    console.log(`[WARNING] Invalid command file: ${file}`);
   }
 }
 
-// 🔥 DEBUG: show how many commands loaded
-console.log("COMMAND FILES LOADED:", client.commands.size);
-
+// READY EVENT
 client.once(Events.ClientReady, () => {
   console.log(`Logged in as ${client.user.tag}`);
+  console.log(`COMMAND FILES LOADED: ${client.commands.size}`);
 });
 
+// INTERACTIONS
 client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
-
   if (!command) return;
 
   try {
     await command.execute(interaction);
   } catch (error) {
-    console.error(error);
+    console.error('Command error:', error);
 
-    if (interaction.replied || interaction.deferred) {
+    if (interaction.deferred || interaction.replied) {
       await interaction.followUp({
         content: 'There was an error.',
         ephemeral: true
@@ -63,4 +67,5 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-client.login(process.env.TOKEN || config.token);
+// LOGIN (Railway-safe)
+client.login(process.env.TOKEN);
