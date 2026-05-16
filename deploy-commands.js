@@ -4,14 +4,8 @@ const config = require('./config.json');
 const commands = [
   {
     name: 'crewcolour',
-    description: 'Create a crew colour',
+    description: 'Create a GTA crew colour',
     options: [
-      {
-        name: 'name',
-        description: 'Name of the crew colour',
-        type: 3,
-        required: true
-      },
       {
         name: 'hex',
         description: 'Main hex colour (e.g. #FF0000)',
@@ -20,31 +14,21 @@ const commands = [
       },
       {
         name: 'pearlescent',
-        description: 'Pearlescent colour',
+        description: 'Pearlescent colour (any text)',
         type: 3,
-        required: false,
-        choices: [
-          { name: 'None', value: 'none' },
-          { name: 'White', value: 'white' },
-          { name: 'Ice White', value: 'ice_white' },
-          { name: 'Blue', value: 'blue' },
-          { name: 'Red', value: 'red' },
-          { name: 'Green', value: 'green' },
-          { name: 'Gold', value: 'gold' },
-          { name: 'Pink', value: 'pink' }
-        ]
+        required: false
       },
       {
         name: 'image',
-        description: 'Image URL',
-        type: 3,
+        description: 'Upload an image',
+        type: 11,
         required: false
       }
     ]
   }
 ];
 
-const rest = new REST({ version: '10' }).setToken(config.token);
+const rest = new REST({ version: '10' }).setToken(process.env.TOKEN || config.token);
 
 (async () => {
   try {
@@ -55,8 +39,8 @@ const rest = new REST({ version: '10' }).setToken(config.token);
       { body: commands }
     );
 
-    console.log('Commands deployed.');
+    console.log('Commands deployed successfully.');
   } catch (error) {
-    console.error(error);
+    console.error('Deploy error:', error);
   }
 })();
