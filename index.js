@@ -1,3 +1,4 @@
+console.log("🔥 INDEX.JS IS RUNNING RIGHT NOW");
 const fs = require('fs');
 const path = require('path');
 
